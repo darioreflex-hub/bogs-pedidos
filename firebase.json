@@ -6,7 +6,9 @@
    ".firebaserc",
    "**/.*",
    "**/node_modules/**",
-   "README.md"
+   "README.md",
+   "tests/**",
+   ".gitignore"
   ],
   "cleanUrls": true,
   "headers": [
