@@ -51,15 +51,6 @@
     ]
    },
    {
-    "source": "index.html",
-    "headers": [
-     {
-      "key": "Cache-Control",
-      "value": "no-cache"
-     }
-    ]
-   },
-   {
     "source": "sw.js",
     "headers": [
      {
@@ -70,6 +61,33 @@
    },
    {
     "source": "data.js",
+    "headers": [
+     {
+      "key": "Cache-Control",
+      "value": "no-cache"
+     }
+    ]
+   },
+   {
+    "source": "/",
+    "headers": [
+     {
+      "key": "Cache-Control",
+      "value": "no-cache"
+     }
+    ]
+   },
+   {
+    "source": "/admin",
+    "headers": [
+     {
+      "key": "Cache-Control",
+      "value": "no-cache"
+     }
+    ]
+   },
+   {
+    "source": "**/*.html",
     "headers": [
      {
       "key": "Cache-Control",
