@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
-    function signedIn() { return request.auth != null && request.auth.token.email != null; }
+    function signedIn() { return request.auth != null && request.auth.token.email != null && request.auth.token.email_verified == true; }
     function isAdmin() {
       return signedIn() && (
         request.auth.token.email == 'darioreflex@gmail.com' ||
