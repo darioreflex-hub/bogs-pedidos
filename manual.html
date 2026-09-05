@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Manual del Panel BOG'S</title>
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+:root{--paper:#f6f1e8;--paper2:#ece4d5;--ink:#1a1612;--ink2:#4a423a;--mute:#7b6f62;--line:#d9cfbe;--gold:#b8801c;--gold2:#e9ae3b;--gold-bg:#fbf1d9;--ok:#2f7d4f;--ok-bg:#e3f2e8;--warn:#a33b2c;--warn-bg:#fbe6e1;--card:#fffdf9}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#141311;--paper2:#1d1b19;--ink:#efe8dc;--ink2:#cfc5b6;--mute:#9c8f7b;--line:#332d25;--gold:#e9ae3b;--gold2:#ffcc72;--gold-bg:#2a2210;--ok:#7ed3a0;--ok-bg:#15281d;--warn:#ff9e91;--warn-bg:#3a1712;--card:#1d1b19}}
+:root[data-theme="dark"]{--paper:#141311;--paper2:#1d1b19;--ink:#efe8dc;--ink2:#cfc5b6;--mute:#9c8f7b;--line:#332d25;--gold:#e9ae3b;--gold2:#ffcc72;--gold-bg:#2a2210;--ok:#7ed3a0;--ok-bg:#15281d;--warn:#ff9e91;--warn-bg:#3a1712;--card:#1d1b19}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 "Space Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1060px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:230px minmax(0,700px);gap:48px;align-items:start}
+@media(max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+header.hero{border-bottom:1px solid var(--line);background:var(--paper2)}
+header.hero .in{max-width:1060px;margin:0 auto;padding:40px 20px 28px;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.logo{background:#0b0907;border-radius:10px;padding:10px 14px;display:inline-flex}
+.logo img{height:40px;display:block}
+h1{font:400 44px/1 Anton,Impact,sans-serif;letter-spacing:.02em;margin:0;text-transform:uppercase;text-wrap:balance}
+.sub{color:var(--mute);margin:6px 0 0;max-width:60ch}
+.toc{position:sticky;top:20px;padding-top:36px;font-size:14px}
+.toc b{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+.toc a{display:block;color:var(--ink2);padding:5px 0;border-left:2px solid var(--line);padding-left:12px}
+.toc a:hover{border-color:var(--gold);color:var(--ink);text-decoration:none}
+main{padding:36px 0 80px}
+section{margin-bottom:56px;scroll-margin-top:24px}
+h2{font:400 30px/1.05 Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:.02em;margin:0 0 6px;display:flex;gap:12px;align-items:baseline}
+h2 .n{color:var(--gold);font-size:18px;letter-spacing:.1em}
+h3{font:700 17px/1.3 "Space Grotesk",sans-serif;margin:28px 0 8px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
+p{margin:10px 0;max-width:68ch}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 14px 44px;max-width:68ch}
+ol.steps li:before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--paper);font:700 14px/28px "Space Grotesk";text-align:center}
+ul{padding-left:22px;max-width:68ch}li{margin:5px 0}
+kbd,.btn{display:inline-block;font:600 13px/1 "Space Grotesk";padding:5px 9px;border-radius:7px;background:var(--gold2);color:#3a2500;border:1px solid var(--gold);white-space:nowrap;vertical-align:middle}
+.btn.g{background:var(--paper2);color:var(--ink);border-color:var(--line)}
+.btn.r{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.tag{display:inline-block;font:700 11px/1 "Space Grotesk";letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:5px;background:var(--paper2);color:var(--ink2)}
+.callout{border-left:4px solid var(--gold);background:var(--gold-bg);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0;max-width:68ch}
+.callout.ok{border-color:var(--ok);background:var(--ok-bg)}.callout.warn{border-color:var(--warn);background:var(--warn-bg)}
+.callout b:first-child{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+figure{margin:20px 0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+figure img{display:block;width:100%;height:auto}
+figure.sm{max-width:420px}
+figcaption{padding:10px 14px;font-size:13px;color:var(--mute);border-top:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;max-width:700px;font-size:15px;margin:12px 0}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.flow .st{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
+.flow .ar{color:var(--mute)}
+.cred{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;max-width:520px;margin:14px 0}
+.cred dt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding-top:3px}.cred dd{margin:0;font-weight:600}
+footer{border-top:1px solid var(--line);color:var(--mute);font-size:13px;padding:24px 20px;text-align:center}
+@media print{.toc,footer{display:none}.wrap{display:block}body{font-size:13px}section{break-inside:avoid-page}figure{break-inside:avoid}h2{margin-top:10px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="in">
+ <span class="logo"><img src="img/logo.jpg" alt="BOG'S"></span>
+ <div><h1>Manual del panel</h1><p class="sub">Cómo atender los pedidos, mantener el menú y configurar el local desde el panel de administración de la app de pedidos.</p></div>
+</div></header>
+
+<div class="wrap">
+<nav class="toc"><b>Contenido</b>
+ <a href="#entrar">1. Entrar al panel</a><a href="#dia">2. Abrir y cerrar el día</a><a href="#pedido">3. Atender un pedido</a><a href="#ventas">4. Historial y ventas</a><a href="#menu">5. Menú y precios</a><a href="#local">6. Datos del local</a><a href="#promos">7. Promociones</a><a href="#equipo">8. Equipo y accesos</a><a href="#salud">9. Salud del sistema</a><a href="#problemas">10. Si algo no anda</a>
+</nav>
+
+<main>
+<section id="entrar">
+ <h2><span class="n">01</span>Entrar al panel</h2>
+ <p>El panel es una página web. No hay nada que instalar: funciona en la computadora del local, en una tablet o en el celular.</p>
+ <dl class="cred"><dt>Dirección</dt><dd><a href="https://bogs-pedidos.web.app/admin">bogs-pedidos.web.app/admin</a></dd><dt>Usuario</dt><dd>el que te dieron (por ejemplo <code>matias</code>)</dd><dt>Contraseña</dt><dd>la que te dieron; se puede cambiar cuando quieras</dd></dl>
+ <figure><img src="img/manual/0-login.jpg" alt="Pantalla de ingreso al panel"><figcaption>Pantalla de ingreso. Alcanza con el nombre de usuario, sin arroba ni dominio.</figcaption></figure>
+ <ol class="steps">
+  <li>Abrí la dirección en el navegador y guardala como favorito o en la pantalla de inicio.</li>
+  <li>Escribí usuario y contraseña y tocá <span class="btn">Entrar</span>.</li>
+  <li>Arriba a la derecha tocá <span class="btn g">🔔 Avisos</span> y aceptá el permiso del navegador. Así, además del sonido, te aparece una notificación por cada pedido nuevo aunque estés en otra ventana.</li>
+  <li>Dejá la pestaña abierta durante todo el horario de atención. Los pedidos entran solos, sin recargar.</li>
+ </ol>
+ <div class="callout"><b>Recomendación</b>Usá una tablet o computadora fija para el panel y el celular del local solo para WhatsApp. En el celular el panel funciona igual, pero con la pantalla apagada no suena.</div>
+</section>
+
+<section id="dia">
+ <h2><span class="n">02</span>Abrir y cerrar el día</h2>
+ <p>En la barra superior del panel están los dos controles que vas a usar todos los días.</p>
+ <h3>Cocina abierta / Cerrado</h3>
+ <p>El botón <span class="btn g">🔥 Cocina abierta</span> indica que la app está recibiendo pedidos. Al tocarlo pasa a <span class="btn r">Cerrado</span>: la app muestra el aviso de cerrado y no deja confirmar pedidos, aunque el cliente puede seguir mirando el menú. Usalo si se corta la luz, se termina la mercadería o cierran antes.</p>
+ <p>Si en <a href="#local">Datos del local</a> activaste los <b>horarios automáticos</b>, la app abre y cierra sola según la franja. Este botón sigue mandando: si lo dejás en Cerrado, no abre aunque sea horario.</p>
+ <h3>Demora estimada</h3>
+ <p>El selector de minutos (por ejemplo <span class="btn g">35–50 min</span>) es lo que ve el cliente en la app antes de pedir y en el mensaje de "salió en camino". Ajustalo cuando la cocina está saturada o muy tranquila. Se aplica al instante.</p>
+</section>
+
+<section id="pedido">
+ <h2><span class="n">03</span>Atender un pedido</h2>
+ <p>Cuando un cliente confirma en la app pasan dos cosas a la vez: te llega el pedido por WhatsApp al número del local, y aparece en la pestaña <b>Pedidos</b> del panel con sonido y notificación. El panel es el lugar para gestionarlo; el WhatsApp queda como respaldo y para hablar con el cliente.</p>
+ <figure><img src="img/manual/1-pedidos.jpg" alt="Tablero de pedidos"><figcaption>El tablero: Nuevos a la izquierda, En cocina en el medio, En camino / Listo a la derecha. Los nuevos parpadean en dorado hasta que los tomás.</figcaption></figure>
+ <h3>Qué tiene cada tarjeta</h3>
+ <figure class="sm"><img src="img/manual/10-tarjeta.jpg" alt="Tarjeta de un pedido"><figcaption>Código, hora y hace cuánto entró; nombre y WhatsApp del cliente; ítems con extras; aclaraciones; modalidad y dirección; forma de pago; total; botones.</figcaption></figure>
+ <ul>
+  <li><b>Código</b> tipo <code>B-K3F9QZ</code>: es el mismo que ve el cliente. Usalo para hablar del pedido.</li>
+  <li><b>Nombre y teléfono</b>: el teléfono es un link que abre el WhatsApp del cliente.</li>
+  <li><b>Ítems</b> con cantidad, extras en dorado y precio. Debajo, las <b>aclaraciones</b> que escribió el cliente.</li>
+  <li><b>Modalidad</b>: 🛵 delivery con la dirección, o 🏪 retiro en local. Y la forma de pago: efectivo, Mercado Pago o transferencia.</li>
+ </ul>
+ <div class="callout warn"><b>Cartel rojo "Revisar antes de cobrar"</b>Cada pedido se vuelve a calcular contra el menú actual. Si el importe que mandó el cliente no coincide con los precios, el envío no es el de la zona o el descuento es mayor al permitido, la tarjeta lo marca en rojo. Puede ser un cambio de precio que hiciste mientras el cliente pedía, o alguien intentando pagar menos. Confirmá el total por WhatsApp antes de cobrar.</div>
+ <h3>El recorrido de un pedido</h3>
+ <div class="flow"><span class="st">Nuevo</span><span class="ar">→</span><span class="st">En cocina</span><span class="ar">→</span><span class="st">En camino</span> <span class="ar">o</span> <span class="st">Listo para retirar</span><span class="ar">→</span><span class="st">Entregado</span></div>
+ <ol class="steps">
+  <li>Entra el pedido: suena y aparece en <b>Nuevos</b>. Leelo y, si querés, tocá 🖨️ para imprimir la comanda para la cocina.</li>
+  <li>Tocá <span class="btn">A la plancha</span>. Pasa a En cocina y el cliente ve en su celular "En la plancha".</li>
+  <li>Cuando sale, tocá <span class="btn">Salió en camino</span> (delivery) o <span class="btn">Listo para retirar</span> (retiro). El cliente lo ve al instante.</li>
+  <li>Al entregarlo o cuando el cliente lo retira, tocá <span class="btn">Entregado</span>. Pasa al historial y suma en Ventas.</li>
+ </ol>
+ <h3>Avisar al cliente por WhatsApp</h3>
+ <p>Desde En cocina en adelante aparece el botón <span class="btn g">💬 Avisar</span>. Abre el WhatsApp del cliente con el mensaje ya escrito según el estado: "ya está en la plancha", "salió en camino, llega en 35–50 min", "está listo para retirar". Solo tenés que tocar enviar. Es opcional; el cliente ve el estado en la app igual.</p>
+ <h3>Imprimir la comanda</h3>
+ <figure class="sm"><img src="img/manual/6-comanda-80mm.jpg" alt="Comanda impresa"><figcaption>La comanda sale en formato de 80 mm para impresora térmica. También se puede imprimir en una común.</figcaption></figure>
+ <p>El botón 🖨️ abre la comanda en una ventana y dispara la impresión. Trae el código, la hora, DELIVERY o RETIRO bien grande, cliente, dirección, ítems con extras, aclaraciones, totales y cómo cobra: "EFECTIVO · COBRAR" o "TRANSFERENCIA · VERIFICAR COMPROBANTE".</p>
+ <h3>Cancelar un pedido</h3>
+ <p>El botón <span class="btn g">✕</span> lo pasa a Cancelado y desaparece del tablero. Se puede <span class="btn g">Reabrir</span> desde el historial si fue un error. Avisale al cliente por WhatsApp: la app le muestra "Cancelado".</p>
+ <figure class="sm"><img src="img/manual/7-pedidos-celular.jpg" alt="Panel en el celular"><figcaption>El mismo tablero en un celular, por si tenés que atender desde el mostrador.</figcaption></figure>
+</section>
+
+<section id="ventas">
+ <h2><span class="n">04</span>Historial y ventas</h2>
+ <p>En Pedidos, el botón <span class="btn g">Historial</span> muestra los entregados y cancelados. Arriba a la derecha ves cuántos entregaste hoy y cuánto facturaste.</p>
+ <figure><img src="img/manual/2-ventas.jpg" alt="Pestaña Ventas"><figcaption>Ventas: últimos 30 días de pedidos entregados.</figcaption></figure>
+ <p>La pestaña <b>Ventas</b> resume los últimos 30 días: facturado, hoy, ticket promedio, envíos cobrados, ventas por día, productos más vendidos, medios de pago y delivery vs retiro. Solo cuenta los pedidos que marcaste como Entregado, así que marcarlos bien importa.</p>
+ <p><span class="btn g">Exportar CSV</span> descarga una planilla con todos los pedidos del período, lista para abrir en Excel: fecha, hora, código, estado, cliente, teléfono, modalidad, dirección, pago, ítems y totales. Sirve para el contador y como copia de seguridad; conviene bajarla una vez por semana.</p>
+</section>
+
+<section id="menu">
+ <h2><span class="n">05</span>Menú y precios</h2>
+ <p>Todo lo que ve el cliente en la app se maneja desde la pestaña <b>Menú</b>. Cada cambio impacta al instante, sin publicar nada.</p>
+ <figure><img src="img/manual/11-fila-menu.jpg" alt="Fila de un producto"><figcaption>Cada producto es una fila: foto, nombre, categoría y precio, estado, y el botón Editar ficha.</figcaption></figure>
+ <h3>Los tres estados de un producto</h3>
+ <table><tr><th>Estado</th><th>Qué ve el cliente</th><th>Cuándo usarlo</th></tr>
+ <tr><td><span class="tag">Publicado</span></td><td>Visible y se puede pedir</td><td>Lo normal</td></tr>
+ <tr><td><span class="tag">Agotado hoy</span></td><td>Visible, atenuado, sin botón de agregar</td><td>Se terminó por hoy, mañana vuelve</td></tr>
+ <tr><td><span class="tag">Oculto</span></td><td>No aparece</td><td>Fuera de temporada, o lo estás armando</td></tr></table>
+ <p>Se cambia con el selector de cada fila. Con eso podés habilitar unos productos y otros no.</p>
+ <h3>Cambiar un precio o cualquier dato</h3>
+ <ol class="steps">
+  <li>Tocá <span class="btn g">✏️ Editar ficha</span> en la fila del producto.</li>
+  <li>Cambiá lo que necesites: nombre, categoría, etiqueta (TOP, XL, NUEVO), precio, precio anterior tachado, descripción corta (la de la lista) y larga (la del detalle), eslogan, puntaje.</li>
+  <li>Tocá <span class="btn">Guardar ficha</span>. Para descartar, <span class="btn g">Cancelar</span>.</li>
+ </ol>
+ <figure><img src="img/manual/3-menu-editor.jpg" alt="Editor de ficha"><figcaption>El editor completo de un producto.</figcaption></figure>
+ <h3>Fotos</h3>
+ <p>Dentro de la ficha, <span class="btn g">📷 Subir foto</span> abre la galería o la cámara del dispositivo. La foto se achica sola y se guarda al instante, sin necesidad de tocar Guardar. Sacala con buena luz, el producto centrado y fondo oscuro si podés: la app la recorta en cuadrado en la lista y apaisada en el detalle. <span class="btn g">Quitar foto</span> vuelve al ícono.</p>
+ <h3>Extras y opciones</h3>
+ <p>En la ficha, la sección <b>Extras y opciones</b> es lo que el cliente puede sumar o sacar: cada línea tiene ícono, nombre, detalle y precio. Un extra con precio 0 funciona como opción, por ejemplo "Sin cebolla". <span class="btn g">Copiar de…</span> trae la lista de otro producto para no cargar lo mismo varias veces. Si dejás la lista vacía, el cliente no ve la sección de personalizar.</p>
+ <h3>Las tres fichas del detalle</h3>
+ <p>Son los tres cuadraditos que se ven en la pantalla del producto (por ejemplo "240g carne · Doble smash", "Pan de papa · Esponjoso", "15–20 min · Punto justo"). Elegís un ícono y escribís título y detalle. Si dejás una vacía, no se muestra.</p>
+ <h3>Otros interruptores de la ficha</h3>
+ <ul>
+  <li><b>Destacado en inicio</b>: es el producto grande con foto que abre la app. Solo uno.</li>
+  <li><b>Etiqueta "Bog's favorita"</b>: la insignia roja en el detalle.</li>
+  <li><b>Envío gratis</b>: si el pedido incluye este producto, el envío sale gratis.</li>
+  <li><b>Precio anterior tachado</b>: si lo completás con un número mayor al precio, la app muestra el viejo tachado y el porcentaje de descuento.</li>
+ </ul>
+ <h3>Agregar, ordenar y borrar</h3>
+ <p><span class="btn">+ Producto</span> crea uno nuevo en estado Oculto y abre su ficha: armalo tranquilo y publicalo cuando esté listo. Las flechas ↑ ↓ cambian el orden dentro de la lista. El tachito borra el producto para siempre; si puede volver, es mejor ponerlo en Oculto.</p>
+ <div class="callout"><b>Ojo con los precios</b>Cuando cambiás un precio, los pedidos que ya estaban en el tablero conservan el precio viejo, y el control de precios los puede marcar en rojo. Es normal: revisá el total y seguí.</div>
+</section>
+
+<section id="local">
+ <h2><span class="n">06</span>Datos del local</h2>
+ <figure><img src="img/manual/5-local.jpg" alt="Pestaña Local"><figcaption>Todo lo que la app dice sobre el local se configura acá. Los cambios se guardan con el botón de abajo, salvo el estado de la cocina que es inmediato.</figcaption></figure>
+ <ul>
+  <li><b>Demora estimada</b> de delivery y de retiro, y el <b>mensaje cuando está cerrado</b>.</li>
+  <li><b>Dirección de retiro</b>: aparece en la app y en los avisos de "listo para retirar".</li>
+  <li><b>Costo de envío</b> base, <b>envío gratis desde</b> (monto del pedido) y <b>descuento por transferencia</b> en porcentaje.</li>
+  <li><b>Alias / CVU</b>: se lo mostramos al cliente que elige transferencia. Revisalo con cuidado.</li>
+  <li><b>WhatsApp</b>: el número que recibe los pedidos, en formato internacional sin espacios (549 + código de área sin 0 + número sin 15). Y cómo se muestra en la app.</li>
+ </ul>
+ <h3>Zonas de entrega</h3>
+ <p>Cada zona tiene un nombre (localidad o barrio) y un costo de envío. El cliente elige la suya de una lista y paga ese envío. Agregá con <span class="btn g">+ Zona</span>, borrá con el tachito y guardá. Si no reparten a un lugar, simplemente no lo pongas: el cliente no va a poder elegirlo.</p>
+ <h3>Horarios automáticos</h3>
+ <p>Activalo y marcá los días y la franja (por ejemplo 19:00 a 00:30; las franjas que cruzan la medianoche funcionan). Fuera de ese horario la app se muestra cerrada y avisa cuándo abre. Debajo te dice si en este momento la app está abierta o cerrada según lo que configuraste. Guardá con <span class="btn">Guardar cambios</span>.</p>
+</section>
+
+<section id="promos">
+ <h2><span class="n">07</span>Promociones</h2>
+ <figure><img src="img/manual/4-promos.jpg" alt="Pestaña Promos"><figcaption>Todas las promociones vienen apagadas. Se prenden y apagan con un toque.</figcaption></figure>
+ <h3>Envío gratis en toda la tienda</h3>
+ <p>Mientras esté activo, todos los pedidos con delivery salen sin costo de envío. Ideal para un lanzamiento o un fin de semana especial. Acordate de apagarlo.</p>
+ <h3>Cupones</h3>
+ <p>Al activarlos, en el carrito aparece el campo "¿Tenés un cupón?". Los creás en la misma pestaña:</p>
+ <ol class="steps">
+  <li>Escribí el <b>código</b> (por ejemplo BIENVENIDO; se guarda en mayúsculas).</li>
+  <li>Elegí el <b>tipo</b>: porcentaje de descuento, monto fijo o envío gratis. Cargá el <b>valor</b>.</li>
+  <li>Opcional: <b>mínimo</b> de compra, <b>usos máximos</b> y fecha de <b>vencimiento</b>.</li>
+  <li>Tocá <span class="btn">Crear cupón</span>. En la lista ves cuántas veces se usó, y podés <span class="btn g">Pausar</span> o borrar.</li>
+ </ol>
+ <h3>Club Bog's</h3>
+ <p>Un programa de fidelidad automático: cada N pedidos entregados, el siguiente tiene un porcentaje de descuento. Configurás "cada cuántos" y "cuánto". Se lleva por número de WhatsApp: el cliente ve su progreso en la app y el premio se aplica solo. El punto se suma cuando marcás el pedido como <b>Entregado</b>, así que otra razón para no saltearse ese paso.</p>
+ <div class="callout"><b>Cómo se combinan</b>Transferencia, cupón y club se suman entre sí, con tope en el subtotal del pedido. El envío se calcula aparte.</div>
+</section>
+
+<section id="equipo">
+ <h2><span class="n">08</span>Equipo y accesos</h2>
+ <figure><img src="img/manual/8-admins.jpg" alt="Pestaña Admins"><figcaption>Quiénes pueden entrar al panel.</figcaption></figure>
+ <p>Para que otra persona use el panel necesita dos cosas: una cuenta con contraseña, que la crea quien administra el sistema, y estar en esta lista. Si alguien entra con una cuenta válida pero todavía no está en la lista, ve una pantalla con su <b>ID de usuario</b>: pedile que te lo pase, pegalo en el campo y tocá <span class="btn">Agregar</span>. Para sacar a alguien, el tachito. Vos siempre podés entrar.</p>
+ <div class="callout warn"><b>Seguridad</b>No compartas la contraseña por WhatsApp ni la anotes a la vista. Si alguien deja de trabajar en el local, sacalo de la lista ese mismo día.</div>
+</section>
+
+<section id="salud">
+ <h2><span class="n">09</span>Salud del sistema</h2>
+ <figure><img src="img/manual/9-salud.jpg" alt="Pestaña Salud"><figcaption>Si a algún cliente le falla la app, acá queda registrado.</figcaption></figure>
+ <p>No hace falta mirarla todos los días. Si un cliente te dice que la app "no le anda", entrá acá: si hubo un error, aparece con la pantalla donde pasó, el tipo de celular y cuántas veces se repitió. Mandale una captura a quien da soporte y con eso alcanza para arreglarlo. Cuando está vacía, todo va bien.</p>
+</section>
+
+<section id="problemas">
+ <h2><span class="n">10</span>Si algo no anda</h2>
+ <table>
+ <tr><th>Qué pasa</th><th>Qué hacer</th></tr>
+ <tr><td>No suena cuando entra un pedido</td><td>La pestaña tiene que estar abierta y haber tenido al menos un toque desde que la abriste (los navegadores bloquean el sonido si no). Activá 🔔 Avisos para tener también la notificación.</td></tr>
+ <tr><td>Un cliente dice que la app se ve mal o vieja</td><td>Que cierre la pestaña del navegador y vuelva a abrir el link. La app se actualiza sola, pero una pestaña abierta hace días puede quedar con la versión anterior.</td></tr>
+ <tr><td>Un pedido tiene el cartel rojo</td><td>Confirmá el total con el cliente por WhatsApp antes de cobrar. Si el total correcto es otro, cobrá el correcto y anotalo en la comanda.</td></tr>
+ <tr><td>La app dice "cerrado" y es horario</td><td>Mirá el botón de la barra superior: si dice Cerrado, tocalo. Si dice Cocina abierta, revisá los horarios automáticos en Local.</td></tr>
+ <tr><td>Olvidé la contraseña</td><td>Si tu usuario tiene un correo real, "Olvidé mi contraseña" en el login te manda un enlace. Si es un usuario sin correo, pedile a quien administra el sistema que la cambie.</td></tr>
+ <tr><td>Entró un pedido falso o de broma</td><td>Cancelalo con ✕. Si se repite desde el mismo número, avisá a soporte para bloquearlo.</td></tr>
+ <tr><td>Se cortó internet en el local</td><td>Los pedidos siguen llegando al WhatsApp del celular. Cuando vuelva la conexión, el panel se pone al día solo.</td></tr>
+ </table>
+ <div class="callout ok"><b>Soporte</b>Ante cualquier duda, escribile a Darío con el código del pedido o una captura de pantalla. Si la app tuvo un error, en la pestaña Salud está el detalle.</div>
+</section>
+</main>
+</div>
+<footer>Manual del panel BOG'S · Actualizado septiembre 2026 · <a href="https://bogs-pedidos.web.app/admin">Ir al panel</a></footer>
+</body>
+</html>
