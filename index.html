@@ -22,11 +22,13 @@ body{background:#050403;margin:0;font-family:'Space Grotesk',system-ui,sans-seri
 .msy.f{font-variation-settings:'FILL' 1,'wght' 400}
 .ns::-webkit-scrollbar{display:none}.ns{scrollbar-width:none}
 html,body{height:100%}
-#app{position:relative;max-width:430px;margin:0 auto;height:100vh;height:-webkit-fill-available;height:100dvh;overflow:hidden;background:#141311;isolation:isolate}
+:root{--vh:100vh}
+@supports(height:100dvh){:root{--vh:100dvh}}
+#app{position:relative;max-width:430px;margin:0 auto;height:var(--vh);overflow:hidden;background:#141311;isolation:isolate}
 .safe-t{padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
 .safe-b{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)}
 .glass{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px)!important}
-@media(max-width:519px){body{overflow:hidden;position:fixed;inset:0}}
+@media(max-width:519px){body{overflow:hidden;position:fixed;top:0;left:0;right:0;height:var(--vh)}}
 @media(min-width:520px){body{background:#050403 radial-gradient(circle at 50% 0,#2a1f0c,#050403 60%);padding:24px 0;height:auto}.safe-t{padding-top:34px}#app{height:880px;border-radius:44px;border:10px solid #17130f;box-shadow:0 30px 80px #000d,0 0 0 1px #2a2420 inset}}
 .scr{position:absolute;inset:0;display:flex;flex-direction:column;animation:in .22s ease}
 @keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
@@ -43,9 +45,10 @@ input,textarea{outline:0}input:focus,textarea:focus{border-color:#e9ae3b!importa
 <div class="toast" id="toast"></div>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="data.js?v=1788590483"></script>
+<script src="data.js?v=1788620610"></script>
 <script>
-const D=window.BOGS_DEFAULTS,CATS=D.cats,OPTS=D.opts,ST=D.statuses;
+(function(){const r=document.documentElement;let last=0;function fit(){const h=window.innerHeight;if(h&&h!==last){last=h;r.style.setProperty("--vh",h+"px")}}fit();addEventListener("resize",fit);addEventListener("orientationchange",()=>setTimeout(fit,250));if(window.visualViewport)visualViewport.addEventListener("resize",fit);addEventListener("pageshow",fit);setTimeout(fit,300);setTimeout(fit,1200)})();
+const D=window.BOGS_DEFAULTS,CATS=D.cats,OPTS=D.opts,ST=D.statuses,E2E=/[?&]e2e/.test(location.search);
 let CFG={...D.settings},P=D.menu.map(x=>({available:true,...x}));
 let db=null,unsubOrder=null;
 try{firebase.initializeApp(D.fb);db=firebase.firestore();
@@ -199,10 +202,10 @@ function confirmOrder(){if(!OPEN())return toast("La cocina está cerrada");if(!S
  const ref=db?db.collection("orders").doc():null,id=ref?ref.id:code;
  const items=S.cart.map(l=>{const p=byId(l.pid);return {pid:l.pid,name:p.n,q:l.q,unit:unit(l),opts:l.opts.map(k=>(optsOf(p)[k]||["?"])[0]),total:unit(l)*l.q}});
  const msg=[`*Pedido ${code} · ${u.name}*`,"",...items.map(i=>`• ${i.q}x ${i.name}${i.opts.length?" ("+i.opts.join(", ")+")":""} · ${fmt(i.total)}`),"",S.mode==="delivery"?`Delivery: ${u.addr}${u.floor?", "+u.floor:""}, ${u.city}`:`Retiro por sucursal (${CFG.pickup})`,`Tel: ${u.phone}`,`Pago: ${payName[S.pay]}${S.pay==="transfer"?" ("+CFG.transferOff+"% OFF)":""}`,S.note?`Aclaraciones: ${S.note}`:"",u.instr&&S.mode==="delivery"?`Repartidor: ${u.instr}`:"",cDisc()?`Cupón ${S.coupon.code}: -${fmt(cDisc())}`:"",kDisc()?`Club Bog's: -${fmt(kDisc())}`:"",`Envío: ${ship()?fmt(ship()):"gratis"}`,`*Total: ${fmt(total())}*`].filter(Boolean).join("\n");
- const wa="https://wa.me/"+CFG.phone+"?text="+encodeURIComponent(msg);window.open(wa,"_blank");
+ const wa="https://wa.me/"+CFG.phone+"?text="+encodeURIComponent(msg);if(!E2E)window.open(wa,"_blank");
  const order={code,status:"nuevo",items,subtotal:sub(),ship:ship(),discount:disc(),discounts:{transfer:tDisc(),coupon:cDisc(),club:kDisc()},coupon:cDisc()?S.coupon.code:"",clubReward:!!kDisc(),total:total(),mode:S.mode,pay:S.pay,note:S.note||"",customer:{name:u.name,phone:u.phone,addr:S.mode==="delivery"?u.addr:"",city:u.city,floor:u.floor||"",instr:u.instr||""}};
- if(ref)ref.set({...order,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>{console.warn(e);toast("No se pudo registrar, pero WhatsApp salió")});
- if(db&&cDisc())db.collection("coupons").doc(S.coupon.code).update({uses:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});S.coupon=null;S.clubReward=false;
+ if(ref&&!E2E)ref.set({...order,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>{console.warn(e);toast("No se pudo registrar, pero WhatsApp salió")});
+ if(db&&cDisc()&&!E2E)db.collection("coupons").doc(S.coupon.code).update({uses:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});S.coupon=null;S.clubReward=false;
  S.orders.unshift({id,code,total:total(),pay:S.pay,mode:S.mode,addr:u.addr,wa,status:"nuevo",items:items.map(i=>i.q+"× "+i.name).join(", "),t:Date.now()});saveLocal();
  S.cart=[];S.note="";S.sumOpen=false;go("done")}
 async function repeat(id){if(!db)return;let d=S.live[id];if(!d){try{const s=await db.collection("orders").doc(id).get();d=s.data()}catch(e){}}if(!d)return toast("No pude recuperar ese pedido");let n=0;(d.items||[]).forEach(i=>{const p=byId(i.pid);if(!p||p.available===false)return;const o=optsOf(p);const opts=(i.opts||[]).map(nm=>o.findIndex(x=>x[0]===nm)).filter(k=>k>=0);S.cart.push({pid:p.id,q:i.q,opts});n++});if(!n)return toast("Esos productos ya no están");toast(n+" producto"+(n>1?"s":"")+" al pedido");go("cart")}
