@@ -6,6 +6,7 @@ module.exports = defineConfig({
     { name: "iPhone 13 (WebKit/Safari)", testMatch: /mobile\.spec\.js/, use: { ...devices["iPhone 13"] } },
     { name: "iPhone SE (WebKit/Safari)", testMatch: /mobile\.spec\.js/, use: { ...devices["iPhone SE"] } },
     { name: "Pixel 5 (Chrome Android)", testMatch: /mobile\.spec\.js/, use: { ...devices["Pixel 5"] } },
+    { name: "Login real (Chrome escritorio)", testMatch: /login\\.spec\\.js/, use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 860 } } },
     { name: "Panel (Chrome escritorio)", testMatch: /admin\.spec\.js/, use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 860 } } },
   ],
 });
