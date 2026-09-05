@@ -1,6 +1,6 @@
 window.BOGS_DEFAULTS={
  fb:{apiKey:"AIzaSyDg-q3kUE1hb_tRDp1JNff5njBo5Rual5s",authDomain:"bogs-pedidos.firebaseapp.com",projectId:"bogs-pedidos",storageBucket:"bogs-pedidos.firebasestorage.app",messagingSenderId:"915900545559",appId:"1:915900545559:web:679f4779af25b315517a52"},
- settings:{open:true,eta:"35–50 min",closedMsg:"Cocina cerrada · Abrimos Mar a Dom 19:00",ship:1800,freeFrom:25000,transferOff:10,alias:"BOGS.BURZACO",pickup:"Alsina 842, Burzaco",pickupEta:"20–30 min",city:"Burzaco",phone:"5491149948134",phoneShow:"11 4994 8134"},
+ settings:{open:true,eta:"35–50 min",closedMsg:"Cocina cerrada · Abrimos Mar a Dom 19:00",ship:1800,freeFrom:25000,transferOff:10,alias:"BOGS.BURZACO",pickup:"Alsina 842, Burzaco",pickupEta:"20–30 min",city:"Burzaco",phone:"5491149948134",phoneShow:"11 4994 8134",hours:{auto:false,days:[0,2,3,4,5,6],from:"19:00",to:"00:30"}},
  cats:["Todos","Hamburguesas","Pizzas NY","Combos","Papas","Bebidas"],
  opts:{b:[["Extra cheddar","Queso fundido extra líquido",1200,"layers"],["Extra medallón","Smash 120 g con costra de fuego",3000,"lunch_dining"],["Agregar papas rústicas","Papas triples fritas con sal marina",2500,"fastfood"],["Sin cebolla","Preferencias de cocción",0,"do_not_disturb_on"]],
   p:[["Doble muzza","Más queso, más estiramiento",2000,"layers"],["Borde relleno","Relleno de cheddar",2500,"donut_large"],["Aceitunas","Verdes descarozadas",800,"circle"],["Sin orégano","Preferencias",0,"do_not_disturb_on"]]},
@@ -20,3 +20,12 @@ window.BOGS_DEFAULTS={
  {id:"agua",order:13,cat:5,n:"Agua sin gas 500 ml",d:"Mineral, bien fría.",p:1800,ic:"water_drop",specs:[["ac_unit","Fría","-2°"],["water_drop","500 ml","Botella"],["timer","0 min","Lista"]]},
  {id:"birra",order:14,cat:5,n:"Birra IPA 473 ml",d:"Lata artesanal, lúpulo cítrico.",p:4500,ic:"sports_bar",specs:[["ac_unit","Fría","-2°"],["sports_bar","473 ml","Lata"],["timer","0 min","Lista"]]}],
  statuses:[["nuevo","Recibido","Te confirmamos en menos de 5 min","check"],["cocina","En la plancha","Fuego sagrado, medallones frescos","skillet"],["camino","En camino","Aprox. 35–50 min","moped"],["listo","Listo para retirar","Pasá por Alsina 842","storefront"],["entregado","¡Entregado!","Hecha con pasión, servida para vos","celebration"],["cancelado","Cancelado","Escribinos por WhatsApp si fue un error","cancel"]]};
+(function(){
+ const nowBA=()=>{const p=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"America/Argentina/Buenos_Aires",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()).map(x=>[x.type,x.value]));return {day:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday),min:(+p.hour%24)*60+ +p.minute}};
+ const toMin=s=>{const [h,m]=String(s||"0:0").split(":").map(Number);return (h||0)*60+(m||0)};
+ window.BOGS_inHours=function(h){if(!h||!h.auto)return true;const {day,min}=nowBA(),f=toMin(h.from),t=toMin(h.to),days=h.days||[];
+  if(f<t)return days.includes(day)&&min>=f&&min<t;
+  return (days.includes(day)&&min>=f)||(days.includes((day+6)%7)&&min<t)};
+ window.BOGS_isOpen=cfg=>!!cfg.open&&window.BOGS_inHours(cfg.hours);
+ window.BOGS_hoursText=function(h){if(!h||!h.auto)return "";const n=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],d=(h.days||[]).slice().sort();return (d.length===7?"Todos los días":d.map(i=>n[i]).join(", "))+" de "+h.from+" a "+h.to};
+})();

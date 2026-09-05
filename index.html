@@ -59,7 +59,7 @@ const disc=()=>S.pay==="transfer"?sub()*CFG.transferOff/100:0;
 const total=()=>sub()+ship()-disc();
 const ic=(n,c="")=>`<span class="msy ${c}">${n}</span>`;
 const src=f=>"img/"+f;
-const pic=(p,cls,kind)=>{const f=kind==="hero"?(p.hero||p.img):kind==="home"?(p.home||p.hero||p.img):p.img;return f?`<img src="${src(f)}" alt="${p.n}" class="${cls} object-cover">`:`<div class="${cls} ember bg-surface-container-lowest flex items-center justify-center">${ic(p.ic||"restaurant","text-primary "+(kind?"text-[120px]":"text-[44px]"))}</div>`};
+const pic=(p,cls,kind)=>{const ff=kind==="hero"?p.hero:kind==="home"?(p.home||p.hero):null;const f=ff?src(ff):(p.imgData||(p.img?src(p.img):null));return f?`<img src="${f}" alt="${p.n}" class="${cls} object-cover">`:`<div class="${cls} ember bg-surface-container-lowest flex items-center justify-center">${ic(p.ic||"restaurant","text-primary "+(kind?"text-[120px]":"text-[44px]"))}</div>`};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ---------- shell ---------- */
@@ -77,8 +77,9 @@ const card=p=>{const off=p.available===false;return `<div class="w-full bg-surfa
  <div class="flex flex-col justify-between flex-1 min-w-0 h-28 py-0.5"><div><h4 class="font-anton text-[20px] uppercase text-on-surface truncate tracking-wide">${esc(p.n)}</h4><p class="text-[12px] text-on-surface-variant line-clamp-2 mt-0.5">${esc(p.d)}</p></div>
  <div class="flex items-center justify-between mt-auto"><span class="font-anton text-[22px] ${p.pz?"text-secondary":"text-primary"}">${fmt(p.p)}</span>${off?"":`<button aria-label="Agregar ${esc(p.n)}" onclick="event.stopPropagation();quickAdd('${p.id}',this)" class="w-9 h-9 ${p.pz?"bg-secondary text-on-secondary":"bg-primary text-on-primary"} rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform">${ic("add","text-[20px]")}</button>`}</div></div></div>`};
 const secHead=(i,t,r,sec)=>`<div class="flex items-center justify-between"><div class="flex items-center gap-1.5">${ic(i,(sec?"text-secondary":"text-primary")+" text-[20px]")}<h3 class="font-anton text-[24px] uppercase tracking-wide">${t}</h3></div><span class="text-[11px] font-bold tracking-[.08em] uppercase ${sec?"text-secondary":"text-outline"}">${r}</span></div>`;
-const ticker=()=>CFG.open?`<div class="flex items-center justify-between bg-surface-container-low px-4 py-2.5 rounded-xl"><div class="flex items-center gap-2">${ic("bolt","text-primary text-[18px]")}<span class="text-[11px] font-semibold tracking-[.08em] uppercase">Demora estimada: <strong class="text-primary">${esc(CFG.eta)}</strong></span></div><div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-[11px] text-outline">Cocina prendida</span></div></div>`
- :`<div class="flex items-center gap-2 bg-error-container/40 border border-error-container px-4 py-2.5 rounded-xl">${ic("bedtime","text-tertiary text-[18px]")}<span class="text-[11px] font-semibold tracking-[.08em] uppercase text-on-error-container">${esc(CFG.closedMsg)}</span></div>`;
+const OPEN=()=>window.BOGS_isOpen(CFG);
+const ticker=()=>OPEN()?`<div class="flex items-center justify-between bg-surface-container-low px-4 py-2.5 rounded-xl"><div class="flex items-center gap-2">${ic("bolt","text-primary text-[18px]")}<span class="text-[11px] font-semibold tracking-[.08em] uppercase">Demora estimada: <strong class="text-primary">${esc(CFG.eta)}</strong></span></div><div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-[11px] text-outline">Cocina prendida</span></div></div>`
+ :`<div class="flex items-center gap-2 bg-error-container/40 border border-error-container px-4 py-2.5 rounded-xl">${ic("bedtime","text-tertiary text-[18px]")}<span class="text-[11px] font-semibold tracking-[.08em] uppercase text-on-error-container">${esc(CFG.open&&!window.BOGS_inHours(CFG.hours)?"Cerrado ahora · "+window.BOGS_hoursText(CFG.hours):CFG.closedMsg)}</span></div>`;
 
 /* ---------- screens ---------- */
 function home(){const h=P.find(x=>x.featured&&x.available!==false)||P.find(x=>x.available!==false)||P[0];const secs=[[1,"star","Los Favoritos","Recetas de los dioses"],[2,"local_pizza","Pizza Estilo New York","Porción Gigante",1],[3,"bolt","Combos","Armá tu festín"],[4,"fastfood","Papas","Siempre frescas"],[5,"local_drink","Bebidas","Bien frías"]];
@@ -180,7 +181,7 @@ function rm(i){S.cart.splice(i,1);render()}
 function favT(id){S.fav.has(id)?S.fav.delete(id):S.fav.add(id);render()}
 function share(id){const u=location.origin+location.pathname+"#"+id;if(navigator.share)navigator.share({title:byId(id).n,url:u}).catch(()=>{});else{navigator.clipboard?.writeText(u);toast("Link copiado")}}
 const payName={mp:"Mercado Pago",transfer:"Transferencia",cash:"Efectivo"};
-function confirmOrder(){if(!CFG.open)return toast("La cocina está cerrada");if(!S.cart.length)return go("home");const u=S.user;
+function confirmOrder(){if(!OPEN())return toast("La cocina está cerrada");if(!S.cart.length)return go("home");const u=S.user;
  const code="B-"+Date.now().toString(36).slice(-4).toUpperCase()+Math.random().toString(36).slice(2,4).toUpperCase();
  const ref=db?db.collection("orders").doc():null,id=ref?ref.id:code;
  const items=S.cart.map(l=>{const p=byId(l.pid);return {pid:l.pid,name:p.n,q:l.q,unit:unit(l),opts:l.opts.map(k=>OPTS[p.o][k][0]),total:unit(l)*l.q}});
@@ -194,6 +195,8 @@ function watchOrders(){if(unsubOrder){unsubOrder();unsubOrder=null}if(!db)return
  if(S.view==="account")S.orders.slice(0,5).forEach(o=>{if(!S.live[o.id])db.collection("orders").doc(o.id).get().then(s=>{if(s.exists){S.live[o.id]=s.data();if(S.view==="account")render()}}).catch(()=>{})})}
 let tt;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1500)}
 render();
+setInterval(()=>{if(S.view==="home")render()},60000);
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 if(location.hash.length>1){const id=location.hash.slice(1);setTimeout(()=>{if(byId(id))openDet(id)},600)}
 </script>
 </body></html>
