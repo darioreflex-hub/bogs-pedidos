@@ -20,6 +20,7 @@ async function t(name, fn) { try { await fn(); passed++; console.log("  ✓ " + 
     await setDoc(doc(db, "coupons/HOLA10"), { type: "percent", value: 10, uses: 3, active: true });
     await setDoc(doc(db, "club/1155555555"), { count: 2 });
     await setDoc(doc(db, "admins/cocina@bogs.com.ar"), { addedBy: OWNER });
+    await setDoc(doc(db, "admins/uid-matias"), { addedBy: OWNER });
     await setDoc(doc(db, "errors/e1"), { app: "cliente", msg: "x" });
   });
   const anon = env.unauthenticatedContext().firestore();
@@ -27,6 +28,8 @@ async function t(name, fn) { try { await fn(); passed++; console.log("  ✓ " + 
   const ownerUnverified = env.authenticatedContext("u2", { email: OWNER, email_verified: false }).firestore();
   const staff = env.authenticatedContext("u3", { email: "cocina@bogs.com.ar", email_verified: true }).firestore();
   const stranger = env.authenticatedContext("u4", { email: "otro@gmail.com", email_verified: true }).firestore();
+  const synthetic = env.authenticatedContext("uid-matias", { email: "matias@bogs-pedidos.app", email_verified: false }).firestore();
+  const syntheticNoAdmin = env.authenticatedContext("uid-otro", { email: "otro@bogs-pedidos.app", email_verified: false }).firestore();
 
   console.log("Público (sin sesión)");
   await t("lee el menú y la configuración", async () => { await assertSucceeds(getDocs(collection(anon, "menu"))); await assertSucceeds(getDoc(doc(anon, "settings/store"))); });
@@ -53,6 +56,8 @@ async function t(name, fn) { try { await fn(); passed++; console.log("  ✓ " + 
   console.log("Administradores");
   await t("dueño verificado lista y actualiza pedidos", async () => { await assertSucceeds(getDocs(collection(owner, "orders"))); await assertSucceeds(updateDoc(doc(owner, "orders/existing"), { status: "cocina" })); });
   await t("dueño edita menú, configuración, cupones, club, admins y errores", async () => { await assertSucceeds(updateDoc(doc(owner, "menu/cheese"), { p: 12000 })); await assertSucceeds(setDoc(doc(owner, "settings/store"), { open: false }, { merge: true })); await assertSucceeds(setDoc(doc(owner, "coupons/NUEVO"), { type: "fixed", value: 500, uses: 0, active: true })); await assertSucceeds(setDoc(doc(owner, "club/1199999999"), { count: 1 })); await assertSucceeds(setDoc(doc(owner, "admins/nuevo@bogs.com.ar"), {})); await assertSucceeds(getDocs(collection(owner, "errors"))); await assertSucceeds(deleteDoc(doc(owner, "errors/e1"))); });
+  await t("usuario sin correo con su ID en admins es admin", async () => { await assertSucceeds(getDocs(collection(synthetic, "orders"))); await assertSucceeds(updateDoc(doc(synthetic, "menu/cheese"), { p: 13000 })); });
+  await t("usuario sin correo sin su ID en admins NO es admin", async () => { await assertFails(getDocs(collection(syntheticNoAdmin, "orders"))); await assertFails(setDoc(doc(syntheticNoAdmin, "admins/uid-otro"), {})); });
   await t("email agregado en admins (verificado) también es admin", async () => { await assertSucceeds(getDocs(collection(staff, "orders"))); await assertSucceeds(updateDoc(doc(staff, "menu/cheese"), { available: false })); });
 
   await env.cleanup();

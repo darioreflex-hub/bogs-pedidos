@@ -1,11 +1,14 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
-    function signedIn() { return request.auth != null && request.auth.token.email != null && request.auth.token.email_verified == true; }
+    // Admin: el dueño con Gmail verificado, un email verificado listado en admins/{email},
+    // o cualquier cuenta cuyo ID de usuario esté en admins/{uid} (sirve para usuarios sin correo real).
+    function verifiedEmail() { return request.auth != null && request.auth.token.email != null && request.auth.token.email_verified == true; }
     function isAdmin() {
-      return signedIn() && (
-        request.auth.token.email == 'darioreflex@gmail.com' ||
-        exists(/databases/$(db)/documents/admins/$(request.auth.token.email))
+      return request.auth != null && (
+        (verifiedEmail() && request.auth.token.email == 'darioreflex@gmail.com') ||
+        (verifiedEmail() && exists(/databases/$(db)/documents/admins/$(request.auth.token.email))) ||
+        exists(/databases/$(db)/documents/admins/$(request.auth.uid))
       );
     }
     function str(v, max) { return v is string && v.size() <= max; }
@@ -27,7 +30,7 @@ service cloud.firestore {
     }
     match /settings/{doc} { allow read: if true; allow write: if isAdmin(); }
     match /menu/{id}      { allow read: if true; allow write: if isAdmin(); }
-    match /admins/{email} { allow read, write: if isAdmin(); }
+    match /admins/{key}   { allow read, write: if isAdmin(); }
     match /coupons/{code} {
       allow get: if true;
       allow list, create, delete: if isAdmin();
