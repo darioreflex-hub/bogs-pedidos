@@ -1,0 +1,1 @@
+{"name":"bogs-build","private":true,"scripts":{"css":"tailwindcss -c tailwind.config.js -i tailwind.css -o ../tw.css --minify"},"devDependencies":{"tailwindcss":"^3.4.17"}}

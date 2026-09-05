@@ -34,6 +34,10 @@ service cloud.firestore {
       allow update: if isAdmin() || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses']) && request.resource.data.uses == resource.data.uses + 1);
     }
     match /club/{phone} { allow get: if true; allow list, write: if isAdmin(); }
+    match /errors/{id} {
+      allow create: if str(request.resource.data.msg, 500) && str(request.resource.data.src, 300) && str(request.resource.data.ua, 300) && str(request.resource.data.app, 20) && request.resource.data.at == request.time;
+      allow read, delete: if isAdmin();
+    }
     match /orders/{id} {
       allow get: if true;
       allow create: if validOrder(request.resource.data);
