@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>BOG'S · Panel</title>
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{surface:"#141311","surface-low":"#1d1b19","surface-c":"#211f1d","surface-high":"#2b2a27","surface-hi":"#363431","on-surface":"#e7e2dd",muted:"#d4c4af",outline:"#9c8f7b",primary:"#ffcc72","on-primary":"#422c00",gold:"#e9ae3b",red:"#93000a","on-red":"#ffdad6",wa:"#25d366"},fontFamily:{anton:["Anton","Impact","sans-serif"],grot:["Space Grotesk","system-ui","sans-serif"]}}}}</script>
+<style>
+body{background:#141311;color:#e7e2dd;font-family:'Space Grotesk',system-ui,sans-serif}
+.msy{font-family:'Material Symbols Outlined';font-size:22px;line-height:1;display:inline-block;font-variation-settings:'FILL' 0,'wght' 400;vertical-align:middle}
+.msy.f{font-variation-settings:'FILL' 1}
+input,select,textarea{background:#0f0e0c;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 12px;color:#e7e2dd;width:100%;outline:0;font-size:14px}
+input:focus,select:focus,textarea:focus{border-color:#e9ae3b;box-shadow:0 0 10px rgba(233,174,59,.2)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.btn-p{background:linear-gradient(90deg,#ffcc72,#e9ae3b);color:#422c00}.btn-g{background:#2b2a27;color:#ffcc72}.btn-r{background:#93000a;color:#ffdad6}
+.card{background:#1d1b19;border:1px solid rgba(233,174,59,.12);border-radius:14px}
+.new{animation:pulse 1.6s infinite}@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(233,174,59,.18)}}
+.tab.on{color:#ffcc72;border-color:#ffcc72}
+</style>
+</head>
+<body>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="data.js"></script>
+<div id="root" class="min-h-screen"></div>
+<script>
+const D=window.BOGS_DEFAULTS,ST=D.statuses,CATS=D.cats;
+firebase.initializeApp(D.fb);const auth=firebase.auth(),db=firebase.firestore(),TS=firebase.firestore.FieldValue.serverTimestamp;
+const $=s=>document.querySelector(s),fmt=n=>"$"+Math.round(n||0).toLocaleString("es-AR"),ic=(n,c="")=>`<span class="msy ${c}">${n}</span>`;
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let A={user:null,tab:"pedidos",orders:[],menu:[],cfg:{...D.settings},admins:[],err:"",filter:"activos",unsubs:[],seen:null,loaded:false};
+const payName={mp:"Mercado Pago",transfer:"Transferencia",cash:"Efectivo"};
+const stName=k=>(ST.find(s=>s[0]===k)||ST[0])[1];
+const ago=t=>{if(!t)return "…";const m=Math.round((Date.now()-t.toMillis())/60000);return m<1?"ahora":m<60?m+" min":Math.floor(m/60)+" h "+(m%60)+" min"};
+const hhmm=t=>t?t.toDate().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}):"";
+function beep(){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.2,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.6);o.start();o.stop(c.currentTime+.6)}catch(e){}}
+
+/* ---------- auth ---------- */
+auth.onAuthStateChanged(u=>{A.user=u;A.unsubs.forEach(f=>f());A.unsubs=[];if(u)subscribe();render()});
+async function login(){A.err="";const e=$("#email").value.trim(),p=$("#pass").value;try{await auth.signInWithEmailAndPassword(e,p)}catch(x){A.err={"auth/operation-not-allowed":"El proveedor Email/Contraseña no está habilitado en Firebase Authentication.","auth/invalid-credential":"Email o contraseña incorrectos.","auth/user-not-found":"Ese usuario no existe. Crealo en Firebase Authentication.","auth/wrong-password":"Contraseña incorrecta.","auth/too-many-requests":"Demasiados intentos. Esperá unos minutos."}[x.code]||x.message;render()}}
+async function reset(){const e=$("#email").value.trim();if(!e){A.err="Escribí tu email primero.";return render()}try{await auth.sendPasswordResetEmail(e);A.err="Te mandamos un mail para restablecer la contraseña."}catch(x){A.err=x.message}render()}
+function subscribe(){
+ A.unsubs.push(db.collection("orders").orderBy("createdAt","desc").limit(150).onSnapshot(s=>{const prev=A.seen;A.orders=s.docs.map(d=>({id:d.id,...d.data()}));const nuevos=A.orders.filter(o=>o.status==="nuevo").length;if(prev!==null&&nuevos>prev)beep();A.seen=nuevos;document.title=(nuevos?`(${nuevos}) `:"")+"BOG'S · Panel";A.loaded=true;render()},e=>{A.err=e.code==="permission-denied"?"Tu usuario no es administrador. Pedile a un admin que agregue tu email.":e.message;render()}));
+ A.unsubs.push(db.collection("menu").orderBy("order").onSnapshot(s=>{A.menu=s.docs.map(d=>({id:d.id,...d.data()}));render()}));
+ A.unsubs.push(db.collection("settings").doc("store").onSnapshot(s=>{if(s.exists)A.cfg={...D.settings,...s.data()};render()}));
+ A.unsubs.push(db.collection("admins").onSnapshot(s=>{A.admins=s.docs.map(d=>d.id);render()},()=>{}));}
+
+/* ---------- views ---------- */
+function loginView(){return `<div class="min-h-screen flex items-center justify-center p-6"><div class="card w-full max-w-sm p-7"><img src="img/logo.jpg" class="h-12 mx-auto rounded" alt="BOG'S"><h1 class="font-anton text-2xl uppercase text-center mt-4">Panel del local</h1><p class="text-muted text-sm text-center mt-1">Pedidos, menú y configuración</p>
+ <div class="mt-6 flex flex-col gap-3"><input id="email" type="email" placeholder="Email" autocomplete="username"><input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"><button class="btn btn-p justify-center" onclick="login()">Entrar</button><button class="text-xs text-outline underline" onclick="reset()">Olvidé mi contraseña</button></div>
+ ${A.err?`<p class="mt-4 text-sm text-on-red bg-red/40 border border-red rounded-lg p-3">${esc(A.err)}</p>`:""}</div></div>`}
+function shell(inner){const nuevos=A.orders.filter(o=>o.status==="nuevo").length;const tabs=[["pedidos","receipt_long","Pedidos"],["menu","restaurant_menu","Menú"],["local","storefront","Local"],["admins","admin_panel_settings","Admins"]];
+ return `<header class="sticky top-0 z-20 bg-surface/90 backdrop-blur border-b border-white/5"><div class="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4"><img src="img/logo.jpg" class="h-8 rounded" alt="BOG'S"><span class="font-anton text-lg uppercase hidden sm:inline">Panel</span>
+ <nav class="flex gap-1 ml-2 overflow-x-auto">${tabs.map(([k,i,l])=>`<button onclick="A.tab='${k}';render()" class="tab flex items-center gap-1.5 px-3 h-16 border-b-2 border-transparent text-sm font-semibold uppercase tracking-wider text-muted ${A.tab===k?"on":""}">${ic(i,"text-[20px]")}<span class="hidden sm:inline">${l}</span>${k==="pedidos"&&nuevos?`<span class="bg-gold text-on-primary text-[11px] font-bold rounded-full px-1.5">${nuevos}</span>`:""}</button>`).join("")}</nav>
+ <div class="ml-auto flex items-center gap-3"><button onclick="toggleOpen()" class="btn ${A.cfg.open?"btn-g":"btn-r"}">${ic(A.cfg.open?"local_fire_department":"bedtime","text-[18px]")}${A.cfg.open?"Cocina abierta":"Cerrado"}</button><span class="text-xs text-outline hidden md:inline">${esc(A.user.email)}</span><button onclick="auth.signOut()" title="Salir" class="text-outline">${ic("logout")}</button></div></div></header>
+ <main class="max-w-6xl mx-auto p-4">${A.err?`<p class="mb-4 text-sm text-on-red bg-red/40 border border-red rounded-lg p-3">${esc(A.err)}</p>`:""}${inner}</main>`}
+
+function orderCard(o){const st=o.status,next={nuevo:["cocina","A la plancha","skillet"],cocina:[o.mode==="delivery"?"camino":"listo",o.mode==="delivery"?"Salió en camino":"Listo para retirar","moped"],camino:["entregado","Entregado","celebration"],listo:["entregado","Entregado","celebration"]}[st];
+ const tel=(o.customer?.phone||"").replace(/\D/g,""),wa=tel?"https://wa.me/"+(tel.startsWith("54")?tel:"549"+tel.replace(/^0/,"").replace(/^15/,"")):"";
+ return `<div class="card p-4 flex flex-col gap-3 ${st==="nuevo"?"new border-gold/60":""}"><div class="flex items-start justify-between gap-2"><div><div class="font-anton text-2xl">${esc(o.code)} <span class="text-sm font-grot text-outline font-normal">${hhmm(o.createdAt)} · hace ${ago(o.createdAt)}</span></div><div class="text-sm font-semibold mt-0.5">${esc(o.customer?.name)} ${wa?`<a href="${wa}" target="_blank" class="text-wa ml-1">${ic("chat","text-[18px]")} ${esc(o.customer.phone)}</a>`:""}</div></div><span class="text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded ${st==="nuevo"?"bg-gold text-on-primary":st==="cancelado"?"bg-red text-on-red":"bg-surface-high text-primary"}">${stName(st)}</span></div>
+ <div class="text-sm flex flex-col gap-1">${(o.items||[]).map(i=>`<div class="flex justify-between gap-2"><span><b>${i.q}×</b> ${esc(i.name)}${i.opts?.length?`<span class="text-primary"> · ${esc(i.opts.join(", "))}</span>`:""}</span><span class="text-muted">${fmt(i.total)}</span></div>`).join("")}</div>
+ ${o.note?`<div class="text-sm bg-surface-c rounded-lg p-2.5 flex gap-2">${ic("edit_note","text-primary text-[18px]")}<span>${esc(o.note)}</span></div>`:""}
+ <div class="text-sm text-muted flex flex-wrap gap-x-4 gap-y-1"><span>${ic(o.mode==="delivery"?"moped":"storefront","text-[18px] text-primary")} ${o.mode==="delivery"?esc([o.customer?.addr,o.customer?.floor,o.customer?.city].filter(Boolean).join(", ")):"Retiro en local"}</span><span>${ic("payments","text-[18px] text-primary")} ${payName[o.pay]||o.pay}${o.discount?" (−"+fmt(o.discount)+")":""}</span>${o.customer?.instr?`<span>${ic("sms","text-[18px] text-primary")} ${esc(o.customer.instr)}</span>`:""}</div>
+ <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/5"><span class="font-anton text-2xl text-primary">${fmt(o.total)}</span><div class="flex gap-2">${st!=="cancelado"&&st!=="entregado"?`<button onclick="setStatus('${o.id}','cancelado')" class="btn btn-g">${ic("close","text-[18px]")}</button>`:""}${next?`<button onclick="setStatus('${o.id}','${next[0]}')" class="btn btn-p">${ic(next[2],"text-[18px]")}${next[1]}</button>`:`<button onclick="setStatus('${o.id}','nuevo')" class="btn btn-g">Reabrir</button>`}</div></div></div>`}
+function pedidos(){const act=A.orders.filter(o=>!["entregado","cancelado"].includes(o.status)),hist=A.orders.filter(o=>["entregado","cancelado"].includes(o.status));const list=A.filter==="activos"?act:hist;
+ const cols=[["nuevo","Nuevos"],["cocina","En cocina"],["camino","En camino / Listo"]];const today=A.orders.filter(o=>o.status==="entregado"&&o.createdAt&&o.createdAt.toDate().toDateString()===new Date().toDateString());
+ return `<div class="flex flex-wrap items-center gap-3 mb-4"><h2 class="font-anton text-3xl uppercase">Pedidos</h2><div class="flex bg-surface-c rounded-lg p-1 text-sm font-semibold">${["activos","historial"].map(f=>`<button onclick="A.filter='${f}';render()" class="px-3 py-1.5 rounded-md uppercase tracking-wider text-xs ${A.filter===f?"bg-gold text-on-primary":"text-muted"}">${f}</button>`).join("")}</div><span class="ml-auto text-sm text-muted">Hoy: <b class="text-on-surface">${today.length}</b> entregados · <b class="text-primary">${fmt(today.reduce((a,o)=>a+(o.total||0),0))}</b></span></div>
+ ${!A.loaded?`<p class="text-muted">Cargando…</p>`:A.filter==="activos"?(act.length?`<div class="grid md:grid-cols-3 gap-4">${cols.map(([k,t])=>{const its=act.filter(o=>k==="camino"?["camino","listo"].includes(o.status):o.status===k);return `<div><div class="text-xs font-bold uppercase tracking-wider text-muted mb-2">${t} · ${its.length}</div><div class="flex flex-col gap-3">${its.map(orderCard).join("")||`<div class="card p-6 text-center text-outline text-sm">Nada por acá</div>`}</div></div>`}).join("")}</div>`:`<div class="card p-10 text-center text-muted">${ic("skillet","text-[48px] text-outline")}<p class="mt-2">Sin pedidos activos. Cuando entre uno, suena y aparece acá.</p></div>`):`<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">${hist.map(orderCard).join("")||`<div class="card p-6 text-center text-outline">Sin historial</div>`}</div>`}`}
+
+function menuView(){if(!A.menu.length)return `<div class="card p-10 text-center"><h2 class="font-anton text-3xl uppercase">Menú vacío</h2><p class="text-muted mt-2">La app está mostrando el menú por defecto. Cargalo en la base para poder editarlo desde acá.</p><button onclick="seedMenu()" class="btn btn-p mt-5">${ic("download","text-[18px]")}Cargar menú inicial (${D.menu.length} productos)</button></div>`;
+ return `<div class="flex items-center gap-3 mb-4"><h2 class="font-anton text-3xl uppercase">Menú</h2><span class="text-sm text-muted">${A.menu.length} productos · los cambios impactan al instante en la app</span><button onclick="addProduct()" class="btn btn-p ml-auto">${ic("add","text-[18px]")}Producto</button></div>
+ <div class="flex flex-col gap-2">${A.menu.map((p,i)=>`<div class="card p-3 grid grid-cols-[64px_1fr] md:grid-cols-[64px_2fr_3fr_110px_130px_auto] gap-3 items-center ${p.available===false?"opacity-60":""}"><div class="w-16 h-16 rounded-lg overflow-hidden bg-surface-c flex items-center justify-center">${p.img?`<img src="img/${esc(p.img)}" class="w-full h-full object-cover" onerror="this.style.display='none'">`:ic(p.ic||"restaurant","text-primary text-[30px]")}</div>
+ <div class="flex flex-col gap-1.5"><input value="${esc(p.n)}" onchange="upd('${p.id}','n',this.value)" class="font-bold"><select onchange="upd('${p.id}','cat',+this.value)">${CATS.slice(1).map((c,k)=>`<option value="${k+1}" ${p.cat===k+1?"selected":""}>${c}</option>`).join("")}</select></div>
+ <div class="flex flex-col gap-1.5 col-span-2 md:col-span-1"><textarea rows="2" onchange="upd('${p.id}','d',this.value)">${esc(p.d)}</textarea><div class="flex gap-1.5"><input value="${esc(p.tag||"")}" placeholder="Etiqueta (TOP, XL…)" onchange="upd('${p.id}','tag',this.value)"><input value="${esc(p.img||"")}" placeholder="foto.jpg" onchange="upd('${p.id}','img',this.value)"></div></div>
+ <div><label class="text-[11px] text-outline uppercase">Precio</label><input type="number" value="${p.p}" onchange="upd('${p.id}','p',+this.value)" class="font-anton text-lg text-primary"></div>
+ <div class="flex flex-col gap-1.5"><button onclick="upd('${p.id}','available',${p.available===false})" class="btn ${p.available===false?"btn-r":"btn-g"} justify-center">${p.available===false?"Agotado":"Disponible"}</button><button onclick="upd('${p.id}','featured',${!p.featured})" class="btn ${p.featured?"btn-p":"btn-g"} justify-center text-[11px]">${ic("star",p.featured?"f text-[16px]":"text-[16px]")}Destacado</button></div>
+ <div class="flex md:flex-col gap-1 justify-end"><button onclick="move(${i},-1)" class="text-outline">${ic("arrow_upward")}</button><button onclick="move(${i},1)" class="text-outline">${ic("arrow_downward")}</button><button onclick="delProduct('${p.id}','${esc(p.n)}')" class="text-red">${ic("delete")}</button></div></div>`).join("")}</div>
+ <p class="text-xs text-outline mt-4">Fotos: por ahora se suben a la carpeta <code>img/</code> del sitio y se referencia el nombre del archivo. Extras y especificaciones se editan en <code>data.js</code>.</p>`}
+
+function localView(){const c=A.cfg;const f=(k,l,t="text",help="")=>`<div><label class="text-xs font-bold uppercase tracking-wider text-muted">${l}</label><input type="${t}" value="${esc(c[k])}" onchange="A.cfg.${k}=${t==="number"?"+":""}this.value">${help?`<p class="text-[11px] text-outline mt-1">${help}</p>`:""}</div>`;
+ return `<h2 class="font-anton text-3xl uppercase mb-4">Local</h2><div class="card p-5 grid md:grid-cols-2 gap-4">
+ <div class="md:col-span-2 flex items-center justify-between bg-surface-c rounded-xl p-4"><div><div class="font-bold">Estado de la cocina</div><div class="text-sm text-muted">Cerrada: la app muestra el aviso y no deja confirmar pedidos.</div></div><button onclick="toggleOpen()" class="btn ${c.open?"btn-p":"btn-r"}">${c.open?"Abierta · Cerrar":"Cerrada · Abrir"}</button></div>
+ ${f("eta","Demora estimada delivery")}${f("pickupEta","Demora retiro")}${f("closedMsg","Mensaje cuando está cerrado")}${f("pickup","Dirección de retiro")}
+ ${f("ship","Costo de envío","number")}${f("freeFrom","Envío gratis desde","number")}${f("transferOff","Descuento transferencia (%)","number")}${f("alias","Alias / CVU")}
+ ${f("city","Localidad por defecto")}${f("phone","WhatsApp (formato 549…)","text","Sin espacios ni +. Ej: 5491149948134")}${f("phoneShow","WhatsApp como se muestra")}
+ <div class="md:col-span-2 flex justify-end"><button onclick="saveCfg()" class="btn btn-p">${ic("save","text-[18px]")}Guardar cambios</button></div></div>`}
+function adminsView(){return `<h2 class="font-anton text-3xl uppercase mb-4">Administradores</h2><div class="card p-5 max-w-xl"><p class="text-sm text-muted">Estos emails pueden entrar al panel. Cada uno además necesita un usuario con contraseña creado en Firebase Authentication.</p>
+ <div class="mt-4 flex flex-col gap-2"><div class="flex items-center justify-between bg-surface-c rounded-lg px-3 py-2 text-sm"><span>darioreflex@gmail.com</span><span class="text-[11px] uppercase text-outline">Dueño</span></div>${A.admins.map(e=>`<div class="flex items-center justify-between bg-surface-c rounded-lg px-3 py-2 text-sm"><span>${esc(e)}</span><button onclick="db.collection('admins').doc('${esc(e)}').delete()" class="text-red">${ic("delete","text-[18px]")}</button></div>`).join("")}</div>
+ <div class="flex gap-2 mt-4"><input id="newAdmin" type="email" placeholder="email@ejemplo.com"><button onclick="addAdmin()" class="btn btn-p">Agregar</button></div></div>`}
+function render(){$("#root").innerHTML=A.user?shell({pedidos,menu:menuView,local:localView,admins:adminsView}[A.tab]()):loginView()}
+
+/* ---------- actions ---------- */
+const fail=e=>{A.err=e.code==="permission-denied"?"Sin permiso: tu email no está en la lista de administradores.":e.message;render()};
+const setStatus=(id,st)=>db.collection("orders").doc(id).update({status:st,updatedAt:TS(),updatedBy:A.user.email}).catch(fail);
+const upd=(id,k,v)=>db.collection("menu").doc(id).update({[k]:v}).catch(fail);
+function move(i,d){const j=i+d;if(j<0||j>=A.menu.length)return;const a=A.menu[i],b=A.menu[j];const bt=db.batch();bt.update(db.collection("menu").doc(a.id),{order:b.order});bt.update(db.collection("menu").doc(b.id),{order:a.order});bt.commit().catch(fail)}
+function addProduct(){const n=prompt("Nombre del producto");if(!n)return;const order=(A.menu.at(-1)?.order||0)+1;db.collection("menu").add({n,d:"",p:0,cat:1,order,available:false,o:"b"}).catch(fail)}
+function delProduct(id,n){if(confirm(`¿Eliminar "${n}" del menú? (Podés marcarlo Agotado en vez de borrarlo)`))db.collection("menu").doc(id).delete().catch(fail)}
+function seedMenu(){const bt=db.batch();D.menu.forEach(p=>bt.set(db.collection("menu").doc(p.id),{available:true,...p}));bt.set(db.collection("settings").doc("store"),D.settings,{merge:true});bt.commit().catch(fail)}
+function toggleOpen(){A.cfg.open=!A.cfg.open;db.collection("settings").doc("store").set({open:A.cfg.open},{merge:true}).catch(fail)}
+function saveCfg(){db.collection("settings").doc("store").set(A.cfg,{merge:true}).then(()=>{A.err="";alert("Guardado")}).catch(fail)}
+function addAdmin(){const e=$("#newAdmin").value.trim().toLowerCase();if(!e.includes("@"))return;db.collection("admins").doc(e).set({addedBy:A.user.email,at:TS()}).catch(fail)}
+render();
+</script>
+</body></html>
