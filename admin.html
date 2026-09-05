@@ -25,7 +25,7 @@ input:focus,select:focus,textarea:focus{border-color:#e9ae3b;box-shadow:0 0 10px
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="data.js?v=1788628579"></script>
+<script src="data.js?v=1788636315"></script>
 <div id="root" class="min-h-screen"></div>
 <script>
 const D=window.BOGS_DEFAULTS,ST=D.statuses,CATS=D.cats;
@@ -49,7 +49,7 @@ async function reset(){const e=toEmail($("#email").value);if(!$("#email").value.
 function subscribe(){
  A.unsubs.push(db.collection("orders").orderBy("createdAt","desc").limit(150).onSnapshot(s=>{const prev=A.seen;A.orders=s.docs.map(d=>({id:d.id,...d.data()}));const nuevos=A.orders.filter(o=>o.status==="nuevo").length;if(prev!==null&&nuevos>prev){beep();notify(A.orders.find(o=>o.status==="nuevo"))}A.seen=nuevos;document.title=(nuevos?`(${nuevos}) `:"")+"BOG'S · Panel";A.loaded=true;render()},e=>{if(e.code==="permission-denied"){A.noAdmin=true}else A.err=e.message;render()}));
  A.unsubs.push(db.collection("orders").where("createdAt",">=",new Date(Date.now()-30*864e5)).orderBy("createdAt","desc").onSnapshot(s=>{A.sales=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
- A.unsubs.push(db.collection("menu").orderBy("order").onSnapshot(s=>{A.menu=s.docs.map(d=>({id:d.id,...d.data()}));render()}));
+ A.unsubs.push(db.collection("menu").orderBy("order").onSnapshot(s=>{A.menu=s.docs.map(d=>window.BOGS_norm({id:d.id,...d.data()}));render()}));
  A.unsubs.push(db.collection("settings").doc("store").onSnapshot(s=>{if(s.exists)A.cfg={...D.settings,...s.data()};render()}));
  A.unsubs.push(db.collection("coupons").onSnapshot(s=>{A.coupons=s.docs.map(d=>({code:d.id,...d.data()}));render()},()=>{}));
  A.unsubs.push(db.collection("errors").orderBy("at","desc").limit(200).onSnapshot(s=>{A.errors=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
@@ -114,7 +114,7 @@ function editView(p){const d=A.draft,f=(k,l,t="text",cls="",ph="")=>`<div class=
 function copyExtras(id){const s=A.menu.find(x=>x.id===id);const ex=s&&s.extras&&s.extras.length?s.extras:((s&&s.o&&D.opts[s.o])||[]);A.draft.extras=ex.map(x=>[...x]);render()}
 function saveDraft(id){const d=A.draft,DEL=firebase.firestore.FieldValue.delete();if(!d.n.trim())return alert("Falta el nombre");if(!(d.p>0))return alert("Falta el precio");
  const doc={n:d.n.trim(),cat:d.cat,p:d.p,oldPrice:d.oldPrice&&d.oldPrice>d.p?d.oldPrice:DEL,d:d.d.trim(),long:d.long.trim()||DEL,slogan:d.slogan.trim()||DEL,tag:d.tag.trim()||DEL,fav:d.fav||DEL,rating:d.rating?+d.rating:DEL,featured:d.featured||DEL,freeShip:d.freeShip||DEL,pz:d.pz||DEL,specs:d.specs.filter(s=>s[1].trim()).map(s=>[s[0],s[1].trim(),s[2].trim()]),extras:d.extras.filter(x=>x[0].trim()).map(x=>[x[0].trim(),(x[1]||"").trim(),+x[2]||0,x[3]||"layers"])};
- db.collection("menu").doc(id).update(doc).then(()=>{A.edit=null;A.draft=null;render()}).catch(fail)}
+ db.collection("menu").doc(id).update(window.BOGS_toDoc(doc)).then(()=>{A.edit=null;A.draft=null;render()}).catch(fail)}
 function setState(id,st){db.collection("menu").doc(id).update({available:st!=="agotado",hidden:st==="oculto"}).catch(fail)}
 function localView(){const c=A.cfg;if(!c.hours)c.hours={...D.settings.hours};const h=c.hours;const f=(k,l,t="text",help="")=>`<div><label class="text-xs font-bold uppercase tracking-wider text-muted">${l}</label><input type="${t}" value="${esc(c[k])}" onchange="A.cfg.${k}=${t==="number"?"+":""}this.value">${help?`<p class="text-[11px] text-outline mt-1">${help}</p>`:""}</div>`;
  return `<h2 class="font-anton text-3xl uppercase mb-4">Local</h2><div class="card p-5 grid md:grid-cols-2 gap-4">
@@ -143,7 +143,7 @@ const upd=(id,k,v)=>db.collection("menu").doc(id).update({[k]:v}).catch(fail);
 function move(i,d){const j=i+d;if(j<0||j>=A.menu.length)return;const a=A.menu[i],b=A.menu[j];const bt=db.batch();bt.update(db.collection("menu").doc(a.id),{order:b.order});bt.update(db.collection("menu").doc(b.id),{order:a.order});bt.commit().catch(fail)}
 function addProduct(){const n=prompt("Nombre del producto");if(!n)return;const order=(A.menu.at(-1)?.order||0)+1;db.collection("menu").add({n,d:"",p:0,cat:1,order,available:true,hidden:true,o:"b"}).then(r=>editP(r.id)).catch(fail)}
 function delProduct(id,n){if(confirm(`¿Eliminar "${n}" del menú? (Podés marcarlo Agotado en vez de borrarlo)`))db.collection("menu").doc(id).delete().catch(fail)}
-function seedMenu(){const bt=db.batch();D.menu.forEach(p=>bt.set(db.collection("menu").doc(p.id),{available:true,...p}));bt.set(db.collection("settings").doc("store"),D.settings,{merge:true});bt.commit().catch(fail)}
+function seedMenu(){const bt=db.batch();D.menu.forEach(p=>bt.set(db.collection("menu").doc(p.id),window.BOGS_toDoc({available:true,...p})));bt.set(db.collection("settings").doc("store"),D.settings,{merge:true});bt.commit().catch(fail)}
 function toggleOpen(){A.cfg.open=!A.cfg.open;db.collection("settings").doc("store").set({open:A.cfg.open},{merge:true}).catch(fail)}
 function saveCfg(){db.collection("settings").doc("store").set(A.cfg,{merge:true}).then(()=>{A.err="";alert("Guardado")}).catch(fail)}
 function addAdmin(){let e=$("#newAdmin").value.trim();if(!e)return;if(e.includes("@"))e=e.toLowerCase();else if(!/^[A-Za-z0-9]{20,40}$/.test(e))return alert("Escribí un email o un ID de usuario (20 a 40 letras y números)");db.collection("admins").doc(e).set({addedBy:A.user.email,at:TS()}).then(()=>{$("#newAdmin").value=""}).catch(fail)}

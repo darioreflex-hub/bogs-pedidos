@@ -29,3 +29,6 @@ window.BOGS_DEFAULTS={
  window.BOGS_isOpen=cfg=>!!cfg.open&&window.BOGS_inHours(cfg.hours);
  window.BOGS_hoursText=function(h){if(!h||!h.auto)return "";const n=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],d=(h.days||[]).slice().sort();return (d.length===7?"Todos los días":d.map(i=>n[i]).join(", "))+" de "+h.from+" a "+h.to};
 })();
+// Firestore no permite listas anidadas: specs/extras viajan como objetos y en memoria se usan como tuplas.
+window.BOGS_norm=function(p){const o={...p};if(Array.isArray(o.specs))o.specs=o.specs.map(s=>Array.isArray(s)?s:[s.ic||"",s.t||"",s.s||""]);if(Array.isArray(o.extras))o.extras=o.extras.map(x=>Array.isArray(x)?x:[x.n||"",x.d||"",+x.p||0,x.ic||"layers"]);return o};
+window.BOGS_toDoc=function(p){const o={...p};if(Array.isArray(o.specs))o.specs=o.specs.map(s=>Array.isArray(s)?{ic:s[0],t:s[1],s:s[2]}:s);if(Array.isArray(o.extras))o.extras=o.extras.map(x=>Array.isArray(x)?{n:x[0],d:x[1]||"",p:+x[2]||0,ic:x[3]||"layers"}:x);return o};

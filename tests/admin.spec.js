@@ -101,7 +101,8 @@ test.describe("Menú", () => {
     expect(save).toBeTruthy();
     expect(save.data.p).toBe(14000);
     expect(save.data.slogan).toBe("Probando eslogan");
-    expect(save.data.extras).toContainEqual(["Huevo frito", "", 1500, "layers"]);
+    expect(save.data.extras).toContainEqual({ n: "Huevo frito", d: "", p: 1500, ic: "layers" });
+    expect(save.data.specs[0]).toEqual({ ic: "lunch_dining", t: "240g Carne", s: "Doble smash" });
     expect(save.data.extras.length).toBe(5); // 4 por defecto + 1 nuevo
   });
 });
