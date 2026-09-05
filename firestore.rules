@@ -28,6 +28,12 @@ service cloud.firestore {
     match /settings/{doc} { allow read: if true; allow write: if isAdmin(); }
     match /menu/{id}      { allow read: if true; allow write: if isAdmin(); }
     match /admins/{email} { allow read, write: if isAdmin(); }
+    match /coupons/{code} {
+      allow get: if true;
+      allow list, create, delete: if isAdmin();
+      allow update: if isAdmin() || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses']) && request.resource.data.uses == resource.data.uses + 1);
+    }
+    match /club/{phone} { allow get: if true; allow list, write: if isAdmin(); }
     match /orders/{id} {
       allow get: if true;
       allow create: if validOrder(request.resource.data);
