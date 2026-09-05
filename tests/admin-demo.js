@@ -27,6 +27,8 @@ function injectAdminDemo() {
     O("B-Q1W2E3", 22, "cocina", "Sofía Paz", "11 7777 4321", "retiro", "cash", [it("combo2", "Combo Doble", 1, 18000)], { clubReward: true }),
     O("B-Z9X8C7", 31, "camino", "Julián Torres", "11 8888 1111", "delivery", "mp", [it("cheese", "Cheese Bog's", 2, 11000)]),
     O("B-A2S3D4", 38, "listo", "Valentina Gómez", "11 9999 2222", "retiro", "cash", [it("muzza", "Muzza Gigante", 2, 7000)]),
+    { ...O("B-PROG01", 30, "nuevo", "Romina Vega", "11 1212 3434", "delivery", "mp", [it("combo2", "Combo Doble", 2, 18000)]), scheduledFor: TS(now + 3 * 3600e3) },
+    { ...O("B-PROG02", 200, "nuevo", "Pablo Ibarra", "11 5656 7878", "retiro", "cash", [it("muzza", "Muzza Gigante", 4, 7000)]), scheduledFor: TS(now + 20 * m) },
     O("B-F5G6H7", 95, "entregado", "Nicolás Ruiz", "11 3333 5555", "delivery", "transfer", [it("olympus", "Olympus Triple", 1, 17000)]),
   ];
   A.sales = [...A.orders.filter(o => o.status === "entregado"), O("B-AYER01", 1500, "entregado", "Ana Díaz", "11 2222 3333", "retiro", "cash", [it("pepp", "Pepperoni Gigante", 3, 8000)])];

@@ -26,7 +26,8 @@ service cloud.firestore {
         && str(o.customer.phone, 30)
         && str(o.customer.addr, 160) && str(o.customer.city, 60)
         && str(o.customer.floor, 60) && str(o.customer.instr, 200)
-        && o.createdAt == request.time;
+        && o.createdAt == request.time
+        && (!('scheduledFor' in o) || (o.scheduledFor is timestamp && o.scheduledFor > request.time && o.scheduledFor < request.time + duration.value(8, 'd')));
     }
     match /settings/{doc} { allow read: if true; allow write: if isAdmin(); }
     match /menu/{id}      { allow read: if true; allow write: if isAdmin(); }

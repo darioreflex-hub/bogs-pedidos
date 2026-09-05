@@ -28,12 +28,14 @@ test.describe("Pedidos", () => {
   test("tablero por columnas, alerta de precio alterado y contadores", async ({ page }) => {
     const errors = await openPanel(page);
     await expect(page.locator("h2", { hasText: "Pedidos" })).toBeVisible();
-    await expect(page.getByText("Nuevos · 2")).toBeVisible();
+    await expect(page.getByText("Programados · 1")).toBeVisible(); // B-PROG01, para dentro de 3 h
+    await expect(page.getByText("Nuevos · 3")).toBeVisible(); // 2 normales + B-PROG02 (vence en 20 min, ya está en preparación)
+    await expect(page.locator(".card", { hasText: "B-PROG02" }).getByText(/Programado · hoy/)).toBeVisible();
     await expect(page.getByText("En cocina · 2")).toBeVisible();
     await expect(page.getByText("En camino / Listo · 2")).toBeVisible();
     await expect(page.getByText("Revisar antes de cobrar")).toHaveCount(1); // solo el pedido con precio alterado
     await expect(page.getByText("Cupón BIENVENIDO")).toBeVisible();
-    await expect(page.locator("nav .bg-gold", { hasText: "2" })).toBeVisible(); // badge de nuevos
+    await expect(page.locator("nav .bg-gold", { hasText: "3" })).toBeVisible(); // badge: nuevos listos para preparar (excluye programados lejanos)
     await page.getByRole("button", { name: /historial/i }).click();
     await expect(page.getByText("B-F5G6H7")).toBeVisible();
     expect(errors).toEqual([]);
@@ -57,7 +59,12 @@ test.describe("Pedidos", () => {
     await openPanel(page);
     await page.evaluate(() => { window.__html = ""; window.open = () => ({ document: { write: s => (window.__html += s), close() {} } }); });
     await page.locator(".card", { hasText: "B-K3F9QZ" }).getByTitle("Imprimir comanda").click();
-    const html = await page.evaluate(() => window.__html);
+    let html;
+    await page.locator(".card", { hasText: "B-PROG02" }).getByTitle("Imprimir comanda").click();
+    expect(await page.evaluate(() => window.__html)).toMatch(/PROGRAMADO PARA HOY \d{2}:\d{2}/);
+    await page.evaluate(() => { window.__html = ""; });
+    await page.locator(".card", { hasText: "B-K3F9QZ" }).getByTitle("Imprimir comanda").click();
+    expect(html = await page.evaluate(() => window.__html)).toBeTruthy();
     expect(html).toContain("B-K3F9QZ"); expect(html).toContain("DELIVERY"); expect(html).toContain("Sin cebolla"); expect(html).toContain("$31.000");
     const aviso = page.locator(".card", { hasText: "B-Z9X8C7" }).getByRole("link", { name: /Avisar/ });
     await expect(aviso).toHaveAttribute("href", /wa\.me\/5491188881111\?text=.*B-Z9X8C7/);

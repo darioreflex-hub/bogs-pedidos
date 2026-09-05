@@ -1,7 +1,7 @@
 // Pruebas de las reglas de seguridad de Firestore contra el emulador local.
 // Ejecutar: npm run test:rules   (levanta el emulador, corre esto y lo apaga)
 const { initializeTestEnvironment, assertSucceeds, assertFails } = require("@firebase/rules-unit-testing");
-const { serverTimestamp, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, collection, increment } = require("firebase/firestore");
+const { serverTimestamp, Timestamp, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, collection, increment } = require("firebase/firestore");
 const fs = require("fs"), path = require("path");
 
 const OWNER = "darioreflex@gmail.com";
@@ -40,6 +40,8 @@ async function t(name, fn) { try { await fn(); passed++; console.log("  ✓ " + 
   await t("no crea un pedido sin fecha del servidor", () => assertFails(addDoc(collection(anon, "orders"), { ...validOrder(), createdAt: new Date() })));
   await t("no crea un pedido sin nombre de cliente", () => assertFails(addDoc(collection(anon, "orders"), { ...validOrder(), customer: { ...validOrder().customer, name: "" } })));
   await t("no crea un pedido con 41 ítems", () => assertFails(addDoc(collection(anon, "orders"), { ...validOrder(), items: Array(41).fill(validOrder().items[0]) })));
+  await t("crea un pedido programado dentro de 8 días", () => assertSucceeds(addDoc(collection(anon, "orders"), { ...validOrder(), scheduledFor: Timestamp.fromMillis(Date.now() + 3 * 3600e3) })));
+  await t("no crea un pedido programado en el pasado ni a más de 8 días", async () => { await assertFails(addDoc(collection(anon, "orders"), { ...validOrder(), scheduledFor: Timestamp.fromMillis(Date.now() - 3600e3) })); await assertFails(addDoc(collection(anon, "orders"), { ...validOrder(), scheduledFor: Timestamp.fromMillis(Date.now() + 9 * 864e5) })); await assertFails(addDoc(collection(anon, "orders"), { ...validOrder(), scheduledFor: "mañana" })); });
   await t("lee un pedido si conoce el id", () => assertSucceeds(getDoc(doc(anon, "orders/existing"))));
   await t("no puede listar pedidos", () => assertFails(getDocs(collection(anon, "orders"))));
   await t("no puede modificar ni borrar un pedido", async () => { await assertFails(updateDoc(doc(anon, "orders/existing"), { status: "entregado" })); await assertFails(deleteDoc(doc(anon, "orders/existing"))); });
