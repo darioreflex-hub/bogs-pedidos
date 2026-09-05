@@ -17,7 +17,7 @@ async function expectFlush(page, what) {
   expect(m.app.h, `${what}: alto de #app = viewport`).toBe(m.vh);
   expect(m.scrollW, `${what}: sin scroll horizontal`).toBeLessThanOrEqual(m.vw);
   if (m.nav) { expect(m.nav.bottom, `${what}: nav pegada al borde inferior`).toBe(m.vh); expect(m.nav.top, `${what}: nav dentro del viewport`).toBeGreaterThan(m.vh - 120); }
-  if (m.glass) { expect(m.glass.bottom, `${what}: barra de acción pegada al borde`).toBe(m.vh); }
+  if (m.glass) { expect(m.glass.bottom, `${what}: barra de acción pegada al borde (o a la nav)`).toBe(m.nav ? m.nav.top : m.vh); }
   expect(m.header.top, `${what}: header arriba`).toBe(0);
   return m;
 }
@@ -49,6 +49,8 @@ test.describe("Layout móvil", () => {
     await page.locator("button", { hasText: /^Agregar\s*\$/ }).tap();
     await page.locator("button", { hasText: "Ver pedido" }).tap(); await expectFlush(page, "carrito");
     await page.locator("button", { hasText: "Continuar" }).last().tap(); await expectFlush(page, "entrega");
+    await page.locator("button", { hasText: "Continuar al pago" }).tap(); await page.waitForTimeout(200); // frena por validación, sigue en entrega
+    await page.locator("header button").first().tap(); await expectFlush(page, "carrito (volver)");
     for (const t of ["Buscar", "Cuenta", "Inicio"]) { await page.locator("nav").getByText(t, { exact: true }).tap(); await page.waitForTimeout(200); await expectFlush(page, t); }
   });
 });
@@ -76,7 +78,7 @@ test.describe("Flujo de pedido con toques reales", () => {
     await page.locator('input[oninput*="S.user.name"]').fill("Prueba E2E");
     await page.locator('input[oninput*="S.user.phone"]').fill("11 4444 4444");
     await page.locator('input[oninput*="S.user.addr"]').fill("Av. Espora 2450");
-    await page.locator("select").selectOption({ label: /Glew/ });
+    await page.locator("select").selectOption("Glew");
     await expect(page.getByText("$2.800").first()).toBeVisible(); // envío Glew
     await page.locator("button", { hasText: "Retiro por sucursal" }).tap();
     await expect(page.getByText("Total final con envío: (gratis)")).toBeVisible();
@@ -87,8 +89,9 @@ test.describe("Flujo de pedido con toques reales", () => {
     await page.locator("button", { hasText: "Efectivo" }).tap();
     await expect(page.getByText("Confirmar pedido · $19.200")).toBeVisible();
     await page.locator("button", { hasText: "Confirmar pedido" }).tap();
-    await expect(page.getByText("¡Pedido enviado!")).toBeVisible();
-    await expect(page.getByText(/Pedido B-[A-Z0-9]{6}/)).toBeVisible();
+    await expect(page.locator("h2", { hasText: /Pedido B-[A-Z0-9]{6}/ })).toBeVisible();
+    await expect(page.getByText("Seguimiento en vivo")).toBeVisible();
+    await expect(page.getByText("Listo para retirar")).toBeVisible();
     await expectFlush(page, "confirmación");
     await page.locator("button", { hasText: "Volver al inicio" }).tap();
     await page.locator("nav").getByText("Cuenta", { exact: true }).tap();
