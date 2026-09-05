@@ -74,7 +74,7 @@ test.describe("Pedido programado", () => {
   });
   test("fuera de horario deja programar en vez de rechazar", async ({ page }) => {
     await page.goto(URL); await page.waitForSelector("nav"); await page.waitForTimeout(1200);
-    await page.evaluate(() => { CFG.open = true; const hm = d => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); CFG.hours = { auto: true, days: [0, 1, 2, 3, 4, 5, 6], from: hm(new Date(Date.now() + 3 * 3600e3)), to: hm(new Date(Date.now() + 5 * 3600e3)) }; // franja futura: ahora está cerrado CFG.preorder = { enabled: true, lead: 45, maxDays: 2 }; render(); });
+    await page.evaluate(() => { CFG.open = true; const hm = d => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); CFG.hours = { auto: true, days: [0, 1, 2, 3, 4, 5, 6], from: hm(new Date(Date.now() + 3 * 3600e3)), to: hm(new Date(Date.now() + 5 * 3600e3)) }; CFG.preorder = { enabled: true, lead: 45, maxDays: 2 }; render(); });
     await expect(page.getByText("Podés programar tu pedido")).toBeVisible();
     await page.evaluate(() => { S.cart.push({ pid: "cheese", q: 1, opts: [] }); S.user = { name: "Prog", phone: "1144444444", addr: "Calle 1", city: "Burzaco", floor: "", instr: "" }; go("delivery"); });
     await expect(page.locator("button", { hasText: "Lo antes posible" })).toBeDisabled();
