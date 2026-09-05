@@ -21,8 +21,13 @@ body{background:#050403;margin:0;font-family:'Space Grotesk',system-ui,sans-seri
 .msy{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400}
 .msy.f{font-variation-settings:'FILL' 1,'wght' 400}
 .ns::-webkit-scrollbar{display:none}.ns{scrollbar-width:none}
-#app{position:relative;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;background:#141311;isolation:isolate}
-@media(min-width:520px){body{background:#050403 radial-gradient(circle at 50% 0,#2a1f0c,#050403 60%);padding:24px 0}#app{height:880px;border-radius:44px;border:10px solid #17130f;box-shadow:0 30px 80px #000d,0 0 0 1px #2a2420 inset}}
+html,body{height:100%}
+#app{position:relative;max-width:430px;margin:0 auto;height:100vh;height:-webkit-fill-available;height:100dvh;overflow:hidden;background:#141311;isolation:isolate}
+.safe-t{padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
+.safe-b{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)}
+.glass{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px)!important}
+@media(max-width:519px){body{overflow:hidden;position:fixed;inset:0}}
+@media(min-width:520px){body{background:#050403 radial-gradient(circle at 50% 0,#2a1f0c,#050403 60%);padding:24px 0;height:auto}.safe-t{padding-top:34px}#app{height:880px;border-radius:44px;border:10px solid #17130f;box-shadow:0 30px 80px #000d,0 0 0 1px #2a2420 inset}}
 .scr{position:absolute;inset:0;display:flex;flex-direction:column;animation:in .22s ease}
 @keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -38,7 +43,7 @@ input,textarea{outline:0}input:focus,textarea:focus{border-color:#e9ae3b!importa
 <div class="toast" id="toast"></div>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="data.js?v=1788590311"></script>
+<script src="data.js?v=1788590483"></script>
 <script>
 const D=window.BOGS_DEFAULTS,CATS=D.cats,OPTS=D.opts,ST=D.statuses;
 let CFG={...D.settings},P=D.menu.map(x=>({available:true,...x}));
@@ -69,14 +74,14 @@ const pic=(p,cls,kind)=>{const ff=kind==="hero"?p.hero:kind==="home"?(p.home||p.
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ---------- shell ---------- */
-function hdr(o={}){return `<header class="shrink-0 z-20 bg-surface/90 backdrop-blur-xl pt-10"><div class="h-16 px-4 flex items-center justify-between gap-3">
+function hdr(o={}){return `<header class="shrink-0 z-20 bg-surface/90 backdrop-blur-xl safe-t"><div class="h-16 px-4 flex items-center justify-between gap-3">
  ${o.back?`<button onclick="go('${o.back}')" class="w-10 h-10 -ml-2 flex items-center justify-center text-on-surface">${ic("arrow_back")}</button>`:""}
  <img src="img/logo.jpg" alt="BOG'S" class="h-8 w-auto rounded">
  ${o.title?`<h1 class="font-anton text-[20px] uppercase tracking-wide flex-1 truncate">${o.title}</h1>`:`<button onclick="go('account')" class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-container min-h-[44px] flex-1 justify-center max-w-[210px]">${ic("location_on","text-primary text-[18px]")}<span class="flex flex-col text-left"><span class="text-[11px] font-semibold tracking-[.06em] text-on-surface-variant uppercase leading-none">Entregar en</span><span class="text-[13px] font-semibold text-on-surface leading-none mt-0.5">${esc(S.user.city||CFG.city)}</span></span>${ic("expand_more","text-outline text-[16px]")}</button>`}
  <button onclick="go('account')" class="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-[0_0_12px_rgba(233,174,59,0.25)] shrink-0">${ic("person","text-on-primary text-[18px]")}</button>
 </div></header>`}
 function nav(a){const it=[["home","local_fire_department","Inicio"],["search","search","Buscar"],["cart","shopping_bag","Pedido"],["account","person","Cuenta"]];
- return `<nav class="shrink-0 z-20 bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.5)]"><div class="flex justify-around items-center h-16 px-4 pb-1">${it.map(([v,i,l])=>`<button onclick="go('${v}')" class="flex flex-col items-center justify-center gap-1 w-16 h-12 ${a===v?"text-primary":"text-on-surface-variant"}"><span class="relative">${ic(i,a===v?"f":"")}${v==="cart"&&cnt()?`<span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface"></span>`:""}</span><span class="text-[11px] font-semibold tracking-[.06em]">${l}</span></button>`).join("")}</div></nav>`}
+ return `<nav class="shrink-0 z-20 bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.5)]"><div class="flex justify-around items-center h-16 px-4 safe-b">${it.map(([v,i,l])=>`<button onclick="go('${v}')" class="flex flex-col items-center justify-center gap-1 w-16 h-12 ${a===v?"text-primary":"text-on-surface-variant"}"><span class="relative">${ic(i,a===v?"f":"")}${v==="cart"&&cnt()?`<span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface"></span>`:""}</span><span class="text-[11px] font-semibold tracking-[.06em]">${l}</span></button>`).join("")}</div></nav>`}
 const cartBar=()=>cnt()?`<div class="px-4 pb-2 pt-1"><button onclick="go('cart')" class="w-full gold-bar text-on-primary rounded-xl p-3 flex items-center justify-between press transition-transform"><span class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-on-primary/15 flex items-center justify-center">${ic("shopping_bag","text-[18px]")}</span><span class="flex flex-col text-left leading-tight"><span class="text-[13px] font-bold uppercase tracking-wide">Ver pedido · ${cnt()} ítem${cnt()>1?"s":""}</span><span class="text-[12px] text-on-primary/80 font-medium">BOG'S ${esc(CFG.city)}</span></span></span><span class="flex items-center gap-1.5"><span class="font-anton text-[22px] tracking-wide">${fmt(sub())}</span>${ic("arrow_forward","text-[20px]")}</span></button></div>`:"";
 const card=p=>{const off=p.available===false;const pct=p.oldPrice>p.p?Math.round((1-p.p/p.oldPrice)*100):0;return `<div class="w-full bg-surface-container-low rounded-xl overflow-hidden p-3 flex gap-3 items-center shadow-md border border-primary/10 cursor-pointer ${off?"opacity-60":""}" onclick="${off?"toast('Agotado por hoy')":`openDet('${p.id}')`}">
  <div class="w-28 h-28 shrink-0 rounded-lg overflow-hidden bg-surface-container-lowest relative">${pic(p,"w-full h-full")}${off?`<div class="absolute inset-0 bg-black/60 flex items-center justify-center text-[12px] font-bold tracking-[.1em] uppercase">Agotado</div>`:p.tag?`<div class="absolute ${p.tag.length>4?"top-1 left-1":"bottom-1 right-1"} px-1.5 py-0.5 rounded text-[11px] font-bold tracking-[.06em] ${p.red?"bg-error-container text-on-error-container":p.tag.length>4?"bg-primary text-on-primary":"bg-surface-container-lowest/80 text-primary"}">${esc(p.tag)}</div>`:""}</div>
